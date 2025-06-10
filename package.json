@@ -2,7 +2,7 @@
   "name": "asm-toolkit",
   "private": true,
   "version": "0.1.0",
-  "homepage": "https://malware-decoded.github.io/assembly-toolkit",
+  "homepage": "https://malware-decoded.github.io/asm-toolkit",
   "type": "module",
   "scripts": {
     "dev": "vite",
