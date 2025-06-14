@@ -7,11 +7,9 @@ const ASSEMBLER_ARCHITECTURES: Architecture[] = [
   'x86',
   'ARM64',
   'ARM',
-  'HEXAGON',
   'MIPS',
   'PPC',
   'SPARC',
-  'SYSTEMZ'
 ];
 
 const EMULATOR_ARCHITECTURES: Architecture[] = [

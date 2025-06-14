@@ -13,19 +13,29 @@ import {
 
 class HookState {
   output_message: String;
+  aborted: boolean;
 
   constructor() {
     this.output_message = "";
+    this.aborted = false;
   }
 }
 
 export function EmulatorView() {
-  const [assemblyCode, setAssemblyCode] = useState("");
   const [output, setOutput] = useState("");
   const [ksReady, setKsReady] = useState(false);
   const [ucReady, setUcReady] = useState(false);
   const [baseMemoryAddress, setBaseMemoryAddress] = useState("0x1000");
-  const { architecture, endianness, mode } = useStore();
+  const [timeoutDuration, setTimeoutDuration] = useState("5000");
+  const [isEmulating, setIsEmulating] = useState(false);
+  const { 
+    architecture, 
+    endianness, 
+    mode, 
+    assemblyCode, 
+    setAssemblyCode,
+    loadExampleCode 
+  } = useStore();
 
   useEffect(() => {
     if (window.ks) {
@@ -77,13 +87,13 @@ export function EmulatorView() {
         baseMode = mode === "MIPS64" ? ob.MODE_MIPS64 : ob.MODE_MIPS32;
         break;
       case "SPARC":
-        baseMode = ob.MODE_SPARC32;
+        baseMode = ob.MODE_SPARC32 | ob.MODE_BIG_ENDIAN;
         break;
       default:
         throw new Error("Invalid architecture");
     }
 
-    if (architecture === "MIPS" || architecture === "SPARC") {
+    if (architecture === "MIPS") {
       baseMode =
         baseMode |
         (endianness === "big" ? ob.MODE_BIG_ENDIAN : ob.MODE_LITTLE_ENDIAN);
@@ -115,13 +125,17 @@ export function EmulatorView() {
     }
   }
 
-  function hookFn(
+  function hookInstruction(
     e: any,
     address_lo: bigint,
     _address_hi: bigint,
     _size: number,
     user_data: HookState
   ) {
+    if (user_data.aborted) {
+      throw new Error("Emulation timed out");
+    }
+
     const registers = readRegisters(e, architecture, mode);
 
     const mem_addr = address_lo.toString(16);
@@ -132,6 +146,16 @@ export function EmulatorView() {
 
     const newOutput = user_data.output_message + msg + "\n";
     user_data.output_message = newOutput;
+  }
+
+  function hookInterrupt(
+    _e: any,
+    _address_lo: bigint,
+    _address_hi: bigint,
+    _size: number,
+    _user_data: undefined
+  ) {
+    console.log("Interrupt hook");
   }
 
   function handleRun() {
@@ -145,6 +169,13 @@ export function EmulatorView() {
       return;
     }
 
+    const timeout = parseInt(timeoutDuration);
+    if (isNaN(timeout) || timeout <= 0) {
+      setOutput("Invalid timeout duration");
+      return;
+    }
+
+    setIsEmulating(true);
     const uc = window.uc;
 
     try {
@@ -156,6 +187,14 @@ export function EmulatorView() {
       const { arch: ucArch, mode: ucMode } = getArchAndMode(uc);
 
       var e = new uc.Unicorn(ucArch, ucMode);
+      var hookState = new HookState();
+
+      // Set up timeout
+      const timeoutId = setTimeout(() => {
+        hookState.aborted = true;
+        setIsEmulating(false);
+        setOutput(prev => prev + "\n// Emulation timed out after " + (timeout/1000) + " seconds");
+      }, timeout);
 
       e.mem_map(addr, 4 * 1024, uc.PROT_ALL);
       e.mem_write(addr, code);
@@ -163,15 +202,23 @@ export function EmulatorView() {
       var begin = addr;
       var until = addr + code.length;
 
-      e.emu_start(begin, until, 0, 1);
+      e.hook_add(uc.HOOK_INTR, hookInterrupt, null, begin, until);
 
-      var hookState = new HookState();
+      if (mode === "THUMB") {
+        e.emu_start(begin | 1, until, 0, 1);
+      } else {
+        e.emu_start(begin, until, 0, 1);
+      }
 
       const pc = getPcRegister(e, architecture, mode);
 
       if (pc.value != begin) {
-        e.hook_add(uc.HOOK_CODE, hookFn, hookState, begin, until);
-        e.emu_start(pc.value, until, 0, 0);
+        e.hook_add(uc.HOOK_CODE, hookInstruction, hookState, begin, until);
+        if (mode === "THUMB") {
+          e.emu_start(pc.value | 1, until, 0, 0);
+        } else {
+          e.emu_start(pc.value, until, 0, 0);
+        }
       }
 
       const registers = readRegisters(e, architecture, mode);
@@ -185,9 +232,12 @@ export function EmulatorView() {
 
       const newOutput = hookState.output_message + msg;
       setOutput(newOutput);
+      clearTimeout(timeoutId);
     } catch (err) {
       console.error("Error running emulation:", err);
-      setOutput("// Error during emulation");
+      setOutput(prev => prev + "\n// Error during emulation: " + err);
+    } finally {
+      setIsEmulating(false);
     }
   }
 
@@ -224,13 +274,34 @@ export function EmulatorView() {
               className="w-full px-3 py-2 border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
+          <div className="w-48">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Timeout (ms)
+            </label>
+            <input
+              type="number"
+              min="1000"
+              step="1000"
+              value={timeoutDuration}
+              onChange={(e) => setTimeoutDuration(e.target.value)}
+              className="w-full px-3 py-2 border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 p-4">
         <div className="flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0 mb-4">
-            <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Assembly Code</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Assembly Code</h2>
+              <button
+                onClick={loadExampleCode}
+                className="px-4 bg-blue-900/20 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300 hover:bg-blue-900/40 dark:hover:bg-blue-900/60 rounded-md hover:text-blue-700 dark:hover:text-blue-200 transition-colors font-medium"
+              >
+                Load Example
+              </button>
+            </div>
             <div className="flex-1 min-h-0">
               <CodeEditor
                 value={assemblyCode}
@@ -249,9 +320,10 @@ export function EmulatorView() {
 
               <button
                 onClick={handleRun}
-                className="px-4 bg-blue-900/20 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300 hover:bg-blue-900/40 dark:hover:bg-blue-900/60 rounded-md hover:text-blue-700 dark:hover:text-blue-200 transition-colors font-medium"
+                disabled={isEmulating}
+                className={`w-[40%] px-4 bg-blue-900/20 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300 hover:bg-blue-900/40 dark:hover:bg-blue-900/60 rounded-md hover:text-blue-700 dark:hover:text-blue-200 transition-colors font-medium ${isEmulating ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Run Emulation
+                {isEmulating ? 'Running...' : 'Run Emulation'}
               </button>
             </div>
             <div className="flex-1 min-h-0">

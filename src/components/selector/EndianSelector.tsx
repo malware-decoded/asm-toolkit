@@ -9,9 +9,6 @@ const getEndianOptions = (architecture: Architecture): Endianness[] => {
     case 'MIPS':
     case 'PPC':
     case 'SPARC':
-      return ['big', 'little'];
-    case 'HEXAGON':
-    case 'SYSTEMZ':
       return ['big'];
     default:
       return ['little'];

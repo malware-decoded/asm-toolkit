@@ -78,6 +78,23 @@ export function CodeEditor({
             highlightActiveLine: true,
             highlightSelectionMatches: true,
             syntaxHighlighting: true,
+            autocompletion: false,
+            bracketMatching: false,
+            closeBrackets: false,
+            searchKeymap: false,
+            defaultKeymap: false,
+            historyKeymap: false,
+            drawSelection: false,
+            dropCursor: false,
+            highlightActiveLineGutter: false,
+            highlightSpecialChars: false,
+            rectangularSelection: false,
+            crosshairCursor: false,
+            allowMultipleSelections: false,
+            tabSize: 2,
+          }}
+          style={{
+            textAlign: "left"
           }}
         />
       </div>
