@@ -24,7 +24,8 @@ export function EmulatorView() {
   const [ksReady, setKsReady] = useState(false);
   const [ucReady, setUcReady] = useState(false);
   const [baseMemoryAddress, setBaseMemoryAddress] = useState("0x1000");
-  const { architecture, endianness, mode, assemblyCode, setAssemblyCode } = useStore();
+  const { architecture, endianness, mode, assemblyCode, setAssemblyCode } =
+    useStore();
 
   useEffect(() => {
     if (window.ks) {
@@ -76,13 +77,13 @@ export function EmulatorView() {
         baseMode = mode === "MIPS64" ? ob.MODE_MIPS64 : ob.MODE_MIPS32;
         break;
       case "SPARC":
-        baseMode = ob.MODE_SPARC32;
+        baseMode = ob.MODE_SPARC32 | ob.MODE_BIG_ENDIAN;
         break;
       default:
         throw new Error("Invalid architecture");
     }
 
-    if (architecture === "MIPS" || architecture === "SPARC") {
+    if (architecture === "MIPS") {
       baseMode =
         baseMode |
         (endianness === "big" ? ob.MODE_BIG_ENDIAN : ob.MODE_LITTLE_ENDIAN);
@@ -114,7 +115,7 @@ export function EmulatorView() {
     }
   }
 
-  function hookFn(
+  function hookInstruction(
     e: any,
     address_lo: bigint,
     _address_hi: bigint,
@@ -131,6 +132,16 @@ export function EmulatorView() {
 
     const newOutput = user_data.output_message + msg + "\n";
     user_data.output_message = newOutput;
+  }
+
+  function hookInterrupt(
+    _e: any,
+    _address_lo: bigint,
+    _address_hi: bigint,
+    _size: number,
+    _user_data: undefined
+  ) {
+    console.log("Interrupt hook");
   }
 
   function handleRun() {
@@ -162,15 +173,25 @@ export function EmulatorView() {
       var begin = addr;
       var until = addr + code.length;
 
-      e.emu_start(begin, until, 0, 1);
+      e.hook_add(uc.HOOK_INTR, hookInterrupt, null, begin, until);
+
+      if (mode === "THUMB") {
+        e.emu_start(begin | 1, until, 0, 1);
+      } else {
+        e.emu_start(begin, until, 0, 1);
+      }
 
       var hookState = new HookState();
 
       const pc = getPcRegister(e, architecture, mode);
 
       if (pc.value != begin) {
-        e.hook_add(uc.HOOK_CODE, hookFn, hookState, begin, until);
-        e.emu_start(pc.value, until, 0, 0);
+        e.hook_add(uc.HOOK_CODE, hookInstruction, hookState, begin, until);
+        if (mode === "THUMB") {
+          e.emu_start(pc.value | 1, until, 0, 0);
+        } else {
+          e.emu_start(pc.value, until, 0, 0);
+        }
       }
 
       const registers = readRegisters(e, architecture, mode);
@@ -229,7 +250,9 @@ export function EmulatorView() {
       <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 p-4">
         <div className="flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0 mb-4">
-            <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Assembly Code</h2>
+            <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
+              Assembly Code
+            </h2>
             <div className="flex-1 min-h-0">
               <CodeEditor
                 value={assemblyCode}
@@ -244,7 +267,9 @@ export function EmulatorView() {
         <div className="flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0 mb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Emulation Log</h2>
+              <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
+                Emulation Log
+              </h2>
 
               <button
                 onClick={handleRun}

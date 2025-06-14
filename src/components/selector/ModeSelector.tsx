@@ -12,7 +12,7 @@ const getModeOptions = (architecture: Architecture): Mode[] => {
     case 'PPC':
       return ['PPC32', 'PPC64'];
     case 'SPARC':
-      return ['SPARC32'];
+      return ['SPARC32', 'SPARC64'];
     case 'ARM':
       return ['ARM', 'THUMB'];
     default:
@@ -23,7 +23,7 @@ const getModeOptions = (architecture: Architecture): Mode[] => {
 export function ModeSelector() {
   const { architecture, mode, setMode } = useStore();
   const modeOptions = getModeOptions(architecture);
-  const isDisabled = architecture === 'ARM64' || architecture === 'HEXAGON' || architecture === 'SYSTEMZ';
+  const isDisabled = architecture === 'ARM64';
 
   // Set default modes when architecture changes
   useEffect(() => {

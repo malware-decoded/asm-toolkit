@@ -83,14 +83,20 @@ export function AssemblerView() {
         }
         break;
       case "SPARC":
-        baseMode = ob.MODE_SPARC32;
 
-        baseMode =
-          baseMode |
-          (endianness === "big" ? ob.MODE_BIG_ENDIAN : ob.MODE_LITTLE_ENDIAN);
+        switch (mode) {
+          case 'SPARC32':
+
+        baseMode = ob.MODE_SPARC32;
         break;
-      case "SYSTEMZ":
-        baseMode = ob.MODE_BIG_ENDIAN;
+        case 'SPARC64':
+        baseMode = ob.MODE_SPARC64;
+        break;
+        default:
+            throw new Error("Invalid mode");
+        }
+
+        baseMode = baseMode | ob.MODE_BIG_ENDIAN;
         break;
       default:
         throw new Error("Invalid architecture");
