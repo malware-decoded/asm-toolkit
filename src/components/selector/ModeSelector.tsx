@@ -16,7 +16,7 @@ const getModeOptions = (architecture: Architecture): Mode[] => {
     case 'ARM':
       return ['ARM', 'THUMB'];
     default:
-      return ['32-bit'];
+      return ['Undefined'];
   }
 };
 
@@ -28,7 +28,7 @@ export function ModeSelector() {
   // Set default modes when architecture changes
   useEffect(() => {
     if (isDisabled) {
-      setMode('32-bit');
+      setMode('Undefined');
     } else if (!modeOptions.includes(mode)) {
       setMode(modeOptions[0]);
     }

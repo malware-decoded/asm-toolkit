@@ -10,7 +10,15 @@ export function AssemblerView() {
   const [outputCode, setOutputCode] = useState("");
   const [ksReady, setKsReady] = useState(false);
   const [csReady, setCsReady] = useState(false);
-  const { architecture, endianness, mode, translationDirection, assemblyCode, setAssemblyCode } = useStore();
+  const { 
+    architecture, 
+    endianness, 
+    mode, 
+    translationDirection, 
+    assemblyCode, 
+    setAssemblyCode,
+    loadExampleCode 
+  } = useStore();
 
   useEffect(() => {
     if (window.ks) {
@@ -219,11 +227,19 @@ export function AssemblerView() {
       <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 p-4">
         <div className="flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0 mb-4">
-            <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
-              {translationDirection === "assembly-to-machine"
-                ? "Assembly Code"
-                : "Machine Code"}
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
+                {translationDirection === "assembly-to-machine"
+                  ? "Assembly Code"
+                  : "Machine Code"}
+              </h2>
+              <button
+                onClick={loadExampleCode}
+                className="px-4 bg-blue-900/20 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300 hover:bg-blue-900/40 dark:hover:bg-blue-900/60 rounded-md hover:text-blue-700 dark:hover:text-blue-200 transition-colors font-medium"
+              >
+                Load Example
+              </button>
+            </div>
             <div className="flex-1 min-h-0">
               <CodeEditor
                 value={assemblyCode}
