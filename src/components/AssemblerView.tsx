@@ -182,28 +182,28 @@ export function AssemblerView() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="min-h-[80px] p-4 bg-white border-b">
+      <div className="min-h-[80px] p-4 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Architecture
             </label>
             <ArchitectureSelector mode="assembler" />
           </div>
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Endianness
             </label>
             <EndianSelector />
           </div>
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Mode
             </label>
             <ModeSelector />
           </div>
           <div className="w-64">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Translation
             </label>
             <TranslationDirectionSelector />
@@ -213,7 +213,7 @@ export function AssemblerView() {
 
       <div className="flex-grow min-h-0 flex flex-col p-4">
         <div className="flex-1 flex flex-col min-h-0 mb-4">
-          <h2 className="text-lg font-medium mb-2">
+          <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
             {translationDirection === "assembly-to-machine"
               ? "Assembly Code"
               : "Machine Code"}
@@ -235,14 +235,14 @@ export function AssemblerView() {
         <div className="flex justify-center py-4">
           <button
             onClick={handleTranslate}
-            className="w-[40%] px-6 py-2 bg-blue-900/20 text-blue-900 hover:bg-blue-900/40 rounded-md hover:text-blue-700 transition-colors font-medium"
+            className="w-[40%] px-6 py-2 bg-blue-900/20 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300 hover:bg-blue-900/40 dark:hover:bg-blue-900/60 rounded-md hover:text-blue-700 dark:hover:text-blue-200 transition-colors font-medium"
           >
             Translate
           </button>
         </div>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <h2 className="text-lg font-medium mb-2">
+          <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
             {translationDirection === "assembly-to-machine"
               ? "Machine Code"
               : "Assembly Code"}

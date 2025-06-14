@@ -193,35 +193,35 @@ export function EmulatorView() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="min-h-[80px] p-4 bg-white border-b">
+      <div className="min-h-[80px] p-4 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Architecture
             </label>
             <ArchitectureSelector mode="emulator" />
           </div>
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Endianness
             </label>
             <EndianSelector />
           </div>
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Mode
             </label>
             <ModeSelector />
           </div>
           <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Base Memory Address
             </label>
             <input
               type="text"
               value={baseMemoryAddress}
               onChange={(e) => setBaseMemoryAddress(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              className="w-full px-3 py-2 border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         </div>
@@ -230,12 +230,12 @@ export function EmulatorView() {
       <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 p-4">
         <div className="flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0 mb-4">
-            <h2 className="text-lg font-medium mb-2">Machine Code Input</h2>
+            <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Assembly Code</h2>
             <div className="flex-1 min-h-0">
               <CodeEditor
                 value={assemblyCode}
                 onChange={setAssemblyCode}
-                placeholder="Enter machine code in hex format..."
+                placeholder="Enter assembly code here..."
                 className="h-full font-mono text-sm"
               />
             </div>
@@ -245,17 +245,23 @@ export function EmulatorView() {
         <div className="flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0 mb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium mb-2">Machine Code Input</h2>
+              <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Emulation Log</h2>
 
               <button
                 onClick={handleRun}
-                className="px-4 bg-blue-900/20 text-blue-900 hover:bg-blue-900/40 rounded-md hover:text-blue-700 transition-colors font-medium"
+                className="px-4 bg-blue-900/20 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300 hover:bg-blue-900/40 dark:hover:bg-blue-900/60 rounded-md hover:text-blue-700 dark:hover:text-blue-200 transition-colors font-medium"
               >
                 Run Emulation
               </button>
             </div>
-            <div className="flex-1 bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-auto whitespace-pre">
-              {output || "No output yet..."}
+            <div className="flex-1 min-h-0">
+              <CodeEditor
+                value={output}
+                readOnly
+                placeholder="No output yet..."
+                className="h-full font-mono text-sm"
+                showCopyButton={false}
+              />
             </div>
           </div>
         </div>
