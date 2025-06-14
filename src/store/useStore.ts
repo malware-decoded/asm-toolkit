@@ -31,10 +31,12 @@ interface AppState {
   endianness: Endianness;
   mode: Mode;
   translationDirection: TranslationDirection;
+  assemblyCode: string;
   setArchitecture: (arch: Architecture) => void;
   setEndianness: (endian: Endianness) => void;
   setMode: (mode: Mode) => void;
   setTranslationDirection: (direction: TranslationDirection) => void;
+  setAssemblyCode: (code: string) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -42,8 +44,10 @@ export const useStore = create<AppState>((set) => ({
   endianness: 'little',
   mode: '32-bit',
   translationDirection: 'assembly-to-machine',
+  assemblyCode: '',
   setArchitecture: (arch) => set({ architecture: arch }),
   setEndianness: (endian) => set({ endianness: endian }),
   setMode: (mode) => set({ mode }),
   setTranslationDirection: (direction) => set({ translationDirection: direction }),
+  setAssemblyCode: (code) => set({ assemblyCode: code }),
 })); 

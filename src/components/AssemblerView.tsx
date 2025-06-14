@@ -7,11 +7,10 @@ import { ModeSelector } from "./selector/ModeSelector";
 import { TranslationDirectionSelector } from "./selector/TranslationDirectionSelector";
 
 export function AssemblerView() {
-  const [inputCode, setInputCode] = useState("");
   const [outputCode, setOutputCode] = useState("");
   const [ksReady, setKsReady] = useState(false);
   const [csReady, setCsReady] = useState(false);
-  const { architecture, endianness, mode, translationDirection } = useStore();
+  const { architecture, endianness, mode, translationDirection, assemblyCode, setAssemblyCode } = useStore();
 
   useEffect(() => {
     if (window.ks) {
@@ -28,7 +27,7 @@ export function AssemblerView() {
   }, []);
 
   function handleInputChange(newCode: string) {
-    setInputCode(newCode);
+    setAssemblyCode(newCode);
   }
 
   function getArchAndMode(ob: any) {
@@ -174,9 +173,9 @@ export function AssemblerView() {
 
   function handleTranslate() {
     if (translationDirection === "assembly-to-machine") {
-      assemblyToMachineCode(inputCode);
+      assemblyToMachineCode(assemblyCode);
     } else {
-      machineCodeToAssembly(inputCode);
+      machineCodeToAssembly(assemblyCode);
     }
   }
 
@@ -221,7 +220,7 @@ export function AssemblerView() {
             </h2>
             <div className="flex-1 min-h-0">
               <CodeEditor
-                value={inputCode}
+                value={assemblyCode}
                 onChange={handleInputChange}
                 placeholder={
                   translationDirection === "assembly-to-machine"
@@ -250,10 +249,12 @@ export function AssemblerView() {
                 Translate
               </button>
             </div>
-
             <div className="flex-1 min-h-0">
-              <CodeEditor value={outputCode} readOnly className="h-full font-mono text-sm"
-              placeholder="No output yet..."
+              <CodeEditor
+                value={outputCode}
+                readOnly
+                className="h-full font-mono text-sm"
+                placeholder="No output yet..."
               />
             </div>
           </div>

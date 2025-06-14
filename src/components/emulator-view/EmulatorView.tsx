@@ -20,12 +20,11 @@ class HookState {
 }
 
 export function EmulatorView() {
-  const [assemblyCode, setAssemblyCode] = useState("");
   const [output, setOutput] = useState("");
   const [ksReady, setKsReady] = useState(false);
   const [ucReady, setUcReady] = useState(false);
   const [baseMemoryAddress, setBaseMemoryAddress] = useState("0x1000");
-  const { architecture, endianness, mode } = useStore();
+  const { architecture, endianness, mode, assemblyCode, setAssemblyCode } = useStore();
 
   useEffect(() => {
     if (window.ks) {
